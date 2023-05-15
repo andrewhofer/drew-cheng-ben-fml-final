@@ -1,11 +1,6 @@
 """
-A web scrpaing program for gathering all quotes from https://quotes.toscrape.com.
-This program prints out the quotes in a nicely formatted manner.
-
-May 10, 2021
-@author Drew Hofer
+A web scrpaing program for gathering headlines frm WSJ
 """
-
 import requests
 import bs4
 
