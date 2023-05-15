@@ -1,6 +1,5 @@
 import openai
 
-
 with open('api_key.txt', 'r') as file:
     openai.api_key = file.read().strip()
 
@@ -11,7 +10,6 @@ messages = [
                                   ""
                                   ""},
 ]
-
 
 while True:
     message = input("User: ")
@@ -25,9 +23,6 @@ while True:
         reply = chat.choices[0].message.content
         print(f"ChatGPT: {reply}")
         messages.append({"role": "assistant", "content": reply})
-
-
-
 
 
 # Google CEO caught having an joyous affair.

@@ -6,11 +6,12 @@ import bs4
 
 def main():
 
-    headlines = gather_headlines(2023, 2, 14)
+    headlines = gather_headlines(2023, 5, 15)
     print_results(headlines)
     
 def gather_headlines(year, month, day):
 
+    important = ['Commodities', 'Tech', 'Finance']
     dictionary = {}
 
     url = 'https://www.wsj.com/news/archive/' + str(year) + "/" + str(month) + "/" + str(day)
@@ -24,24 +25,21 @@ def gather_headlines(year, month, day):
         header = article.span.text
         text = article.h2.text
 
-        if header in dictionary.keys(): 
-            dictionary[header].append(text)
-                    
-        else: 
-            dictionary[header] = [text]
+        if header in important:
+            if header in dictionary.keys(): 
+                dictionary[header].append(text)
+                        
+            else: 
+                dictionary[header] = [text]
 
     return dictionary
 
 def print_results(quotes):
 
-    print("\n")
-
     for key, value in quotes.items():
-        print(key + ":", "\n")
+        print(key + ":")
 
         for item in range(0, len(value)):
             print("–", value[item])
-
-        print("\n")
 
 main()
