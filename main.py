@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import indicators as ind
-import DeepQLearner as Q  # replace 'your_dqn_file' with the name of your DQN file
+import DeepQLearner as Q
 
 # Load your data
 data = pd.read_csv('data/DIS.csv')
@@ -20,8 +20,8 @@ indicators.add_rsi(14)
 indicators.add_stochastic_oscillator(14)
 
 # Define state and action dimensions
-state_dim = 9  # Adjust this value according to the number of indicators you're using
-action_dim = 3  # Define your own action dimension
+state_dim = 9
+action_dim = 3
 
 # Initialize the DQN model
 dqn = Q.DeepQLearner(state_dim=state_dim, action_dim=action_dim)
