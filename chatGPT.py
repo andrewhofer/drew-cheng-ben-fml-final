@@ -39,4 +39,5 @@ while True:
 
 
 # I really enjoyed the movie. The acting was excellent!
+# people enjoyed the movie, it was excellent
 # We went to the store on a very average day.
