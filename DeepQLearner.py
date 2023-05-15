@@ -66,9 +66,11 @@ class DeepQLearner:
         #
         # When testing, you probably do not want to take random actions... (What good would it do?)
         q_vals = self.model.predict(np.array(s))
-        action = np.argmax(q_vals)
+        a = np.argmax(q_vals)
+        self.prev_s = s
+        self.prev_a = a
 
-        return action
+        return a
 
     def update(self, alpha, gamma, r, previous, exp_future_rewards):
         return (1 - alpha) * previous + alpha * (r + gamma * exp_future_rewards)
