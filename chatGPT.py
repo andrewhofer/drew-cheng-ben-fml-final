@@ -1,10 +1,9 @@
 import openai
 
-openai.api_key = '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'
 
-messages = [
-    {"role": "system", "content": "FML, isn't it right?"},
-]
+with open('api_key.txt', 'r') as file:
+    openai.api_key = file.read().strip()
+
 
 messages = [
     {"role": "system", "content": ""
