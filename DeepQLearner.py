@@ -72,9 +72,6 @@ class DeepQLearner:
 
         return a
 
-    def update(self, alpha, gamma, r, previous, exp_future_rewards):
-        return (1 - alpha) * previous + alpha * (r + gamma * exp_future_rewards)
-
     def choose_action(self, s):
         if random.random() < self.epsilon:
             return np.random.randint(self.action_dim)
