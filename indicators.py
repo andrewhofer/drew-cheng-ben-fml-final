@@ -67,3 +67,39 @@ def get_data(start_date, end_date, symbols, column_name='Adj Close', include_spy
         del df['SPY']
 
     return df
+
+def assess_strategy(start, end, trades, symbol, starting_value):
+
+    num_trades = 0
+    trades['CASH'] = 0
+    trades['PORTFOLIO'] = 0
+    prev_cash = starting_value
+
+    print(trades)
+
+    for i in range(len(trades)):
+        curr_trade = trades.iloc[i, 1]
+        curr_price = trades.iloc[i, 0]
+
+        if curr_trade != 0:
+            num_trades += 1
+            if curr_trade > 0:
+                capital = curr_trade * curr_price
+                #cost = (capital + self.fixed_cost + capital*self.floating_cost)
+                trades.iloc[i, 3] = prev_cash - capital
+                prev_cash = prev_cash - capital
+            if curr_trade < 0:
+                capital = -curr_trade * curr_price
+                #cost = (capital - self.fixed_cost - capital*self.floating_cost)
+                trades.iloc[i:, 3] = prev_cash + capital
+                prev_cash = prev_cash + capital
+        else:
+            trades.iloc[i, 3] = prev_cash
+        trades.iloc[i, 4] = trades.iloc[i, 3] + (trades.iloc[i, 0] * trades.iloc[i, 2])
+
+    cum_frame = (trades['PORTFOLIO'] / 200000) - 1
+    adr = ((trades['PORTFOLIO'] / trades['PORTFOLIO'].shift()) - 1).mean()
+    std_dr = ((trades['PORTFOLIO'] / trades['PORTFOLIO'].shift()) - 1).std()
+    total_cum = trades.iloc[-1, -1]
+
+    return cum_frame, total_cum, adr, std_dr

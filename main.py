@@ -27,24 +27,82 @@ print(indicators.data)
 # Define state and action dimensions
 state_dim = 8
 action_dim = 3
-
 # Initialize the DQN model
 dqn = Q.DeepQLearner(state_dim=state_dim, action_dim=action_dim)
 
-# Loop over the data
-for i in range(len(indicators.data)):
-    state = []
-    for indicator in ['SMA_50', 'SMA_200', 'OBV', 'ADL', 'ADX', 'MACD', 'RSI', 'Sto_Osc']:
-        state.append(indicators.get_indicator(indicator, i))
+shares = 1000
 
-    print(state)
+prices = ind.get_data('2010-01-01', '2010-12-31', ['XLK'], include_spy=False)
+prices['Trades'], prices['Holding'] = 0, 0
+fresh_frame = prices.copy()
+print(prices)
+for i in range(500):
+    current_holding = 0
+    data = fresh_frame.copy()
+    cash = 200000
+    prev_portfolio = 200000
+    reward = 0
 
-    state = np.array(state)
-    #reward = P.calculate_reward(i, data)  # Implement this function
-    reward = 1
+    # Loop over the data
+    for j in range(len(indicators.data)):
+        state = []
+        for indicator in ['SMA_50', 'SMA_200', 'OBV', 'ADL', 'ADX', 'MACD', 'RSI', 'Sto_Osc']:
+            state.append(indicators.get_indicator(indicator, j))
 
-    # Train the DQN model
-    action = dqn.train(state, reward)
+        state = np.array(state)
+        price = data['XLK'].iloc[j]
+        position_value = current_holding * price
+        reward = position_value + cash - 200000
 
-    # Print the action (just for debugging)
-    print(f'Day {i}: Action {action}')
+        """
+        if j == 0:
+            action = dqn.test(state)
+        else:
+        """
+        action = dqn.train(state, reward)
+
+        if action == 0:  # Buy
+            if current_holding < shares:
+                trade = shares
+                trade_val = price * trade
+                cash -= trade_val
+                current_holding += shares
+                data.iloc[j, 1] = trade
+                data.iloc[j, 2] = current_holding
+            else:
+                data.iloc[j, 1] = 0
+                data.iloc[j, 2] = current_holding
+        elif action == 1:  # Sell
+            if current_holding > -shares:
+                trade = -shares
+                trade_val = price * abs(trade)
+                cash += trade_val
+                current_holding -= shares
+                data.iloc[j, 1] = trade
+                data.iloc[j, 2] = current_holding
+            else:
+                data.iloc[j, 1] = 0
+                data.iloc[j, 2] = current_holding
+        else:  # Flat
+            if current_holding == shares: # Sell
+                trade = shares
+                trade_val = price * trade
+                cash += trade_val
+                current_holding = 0
+                data.iloc[j, 1] = -shares
+                data.iloc[j, 2] = current_holding
+            elif current_holding == -shares: # Buy
+                trade = shares
+                trade_val = price * trade
+                cash -= trade_val
+                current_holding = 0
+                data.iloc[j, 1] = shares
+                data.iloc[j, 2] = current_holding
+            else:
+                data.iloc[j, 1] = 0
+                data.iloc[j, 2] = current_holding
+
+        # Print the action (just for debugging)
+        print(f'Day {j}: Action {action}')
+    cum_frame, total_cum, adr, std = ind.assess_strategy('2010-01-01', '2010-12-31', data, 'XLK', 200000)
+    print("Training trip " + str(j) + " net profit: $" + str(round(total_cum-200000, 2)))
