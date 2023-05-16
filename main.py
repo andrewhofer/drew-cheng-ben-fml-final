@@ -23,7 +23,8 @@ state_dim = 9
 action_dim = 3
 
 # Initialize the DQN model and load indicators
-dqn = Q.DeepQLearner(state_dim=state_dim, action_dim=action_dim)
+dqn = Q.DeepQLearner(state_dim=state_dim, action_dim=action_dim,alpha = 0.9, gamma = 0.9, epsilon = 0.998,
+                  epsilon_decay = 0.999, hidden_layers = 4, buffer_size = 150, batch_size = 64)
 indicators = pd.read_csv('XLK_Inds.csv')
 
 prices = ind.get_data(train_start, train_end, [symbol], include_spy=False)
@@ -33,13 +34,20 @@ indicators.set_index('Date', inplace=True)
 
 train_inds = indicators.loc[train_start:train_end]
 
+starting_stock_value = prices[symbol].iloc[0]
+
+days = 10
+flat_holding_penalty = 10
+
 # Training trips
-for i in range(1):
+for i in range(20):
     current_holding = 0
     data = fresh_frame.copy()
     cash = starting_cash
     prev_portfolio = starting_cash
     reward = 0
+    stock_value_3_days_ago = starting_stock_value
+    portfolio_3_days_ago = starting_cash
 
     # Loop over the data
     for j in range(len(train_inds)):
@@ -50,7 +58,24 @@ for i in range(1):
         state = np.array(state)
         price = data[symbol].iloc[j]
         curr_portfolio = cash + (current_holding * price)
-        reward = (curr_portfolio / starting_cash) - 1
+        if j >= days:
+            stock_value_3_days_ago = data[symbol].iloc[j - days]
+            portfolio_3_days_ago = cash + (data['Holding'].iloc[j - days] * data[symbol].iloc[j - days])
+
+        #reward = ((curr_portfolio / starting_cash) - 1)*100
+        #reward = ((curr_portfolio / starting_cash) - (price / starting_stock_value)) * 20
+        #reward = -((curr_portfolio / starting_cash) - (price / starting_stock_value)) ** 2 * 20
+        #performance_diff = (curr_portfolio / starting_cash) - (price / starting_stock_value)
+        performance_diff = (curr_portfolio / portfolio_3_days_ago) - (price / stock_value_3_days_ago)
+        # ...
+
+        if performance_diff < 0:  # Portfolio is underperforming
+            reward = performance_diff ** 2 * -60
+        else:  # Portfolio is outperforming or equal
+            reward = performance_diff ** 2 * 200
+        reward += ((curr_portfolio / starting_cash) - 1)*3
+        #reward *= j/10
+        print(f'reward {reward}')
 
         if j == 0:
             action = dqn.test(state)
@@ -80,6 +105,7 @@ for i in range(1):
                 data.iloc[j, 1] = 0
                 data.iloc[j, 2] = current_holding
         else:  # Flat
+            reward-=flat_holding_penalty
             if current_holding == shares: # Sell
                 trade = shares
                 trade_val = price * trade
@@ -98,11 +124,24 @@ for i in range(1):
                 data.iloc[j, 1] = 0
                 data.iloc[j, 2] = current_holding
 
-        #print(f'Day {j}: Action {action}')
+        print(f'Day {j}: Action {action}')
 
     # Get results of training trip
     cum_frame, total_cum, adr, std = ind.assess_strategy(train_start, train_end, data, symbol, starting_cash)
     print("Training trip " + str(i) + " net profit: $" + str(round(total_cum-starting_cash, 2)))
+
+    prices = ind.get_data(train_start, train_end, [symbol], include_spy=False)
+    prices = (prices / prices[symbol].iloc[0]) - 1  # Benchmark
+    pp.plot(prices, color='m', label='Buy and Hold Benchmarl')  # Benchmark
+    pp.plot(cum_frame, color='g', label='Q–Learned Strategy')
+    pp.legend()
+    pp.title("Benchmark vs test run " + str(i))
+    pp.xlabel("Date")
+    pp.ylabel("Cumulative Returns")
+    pp.grid()
+    pp.show()
+
+
 
 prices = ind.get_data(train_start, train_end, [symbol], include_spy=False)
 prices = (prices / prices[symbol].iloc[0]) - 1 # Benchmark
@@ -114,3 +153,7 @@ pp.xlabel("Date")
 pp.ylabel("Cumulative Returns")
 pp.grid()
 pp.show()
+
+
+
+#[[11.961619  9.536394  9.122626]]
