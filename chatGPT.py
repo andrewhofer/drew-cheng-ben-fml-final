@@ -2,7 +2,11 @@ import openai
 import scrape as scrap
 import re
 
+<<<<<<< HEAD
 system_message ="Please return only a single numerical score (absolutely nothing else) ranging from -100 to +100 for each of the following news article titles for their sector. A score of -100 indicates extreme negative sentiment that could potentially have a disastrous impact on the stock price of that specific sector. A score of 0 is neutral, perhaps neither impacting that market sector positively or negatively. A score of +100 indicates extreme positive sentiment that could potentially have a highly beneficial impact on that sector’s stock price. Make sure that is the impact on that specific sector, not the impact on the macro markets or other non-related markets. If you think that this is not a news article title or will not impact the financial market as a whole, return 0. And remember to provide only numerical responses, no explanation at all, especially when it is 0. \n Here are some examples and guidelines: \n Commodities, Widespread Drought Devastates Global Crop Production, Commodities Prices to Skyrocket, -100; Tech, Tech Industry Under Threat: Major Data Breach Affects All Big-Tech Companies such as Google, Meta, Microsoft, -100; Tech, Stable Quarter Reported for Tech Sector Amid Mixed Market Signals, 0; Tech, Breakthrough in Artificial Intelligence Technology Promises to Catapult Tech Sector to New Highs, 100; Finance, Global Financial Crisis Looms: Interest Rates Surge Unexpectedly, -100; Finance, Sudden Surge in Global IPO Activity: Financial Sector Set for Record Profits, +100"
+=======
+system_message ="Please return a single numerical score ranging from -100 to +100 for each of the following news article titles for their sector. A score of -100 indicates extreme negative sentiment that could potentially have a disastrous impact on the stock price of the Technology sector. A score of 0 is neutral, perhaps neither impacting that Tech sector positively or negatively. A score of +100 indicates extreme positive sentiment that could potentially have a highly beneficial impact on Tech stock price. Make sure that is the impact on that Tech sector, not the impact on the macro markets or other non-tech-related markets. If you think that this is not a news article title or will not impact the financial market as a whole, return 0. \n Here are some examples and guidelines: \n Tech, Widespread Drought Devastates Global Crop Production, Commodities Prices to Skyrocket, 0 (news is not related to Tech sector); Tech, Tech Industry Under Threat: Major Data Breach Affects All Big-Tech Companies such as Google, Meta, Microsoft, -100 (very bad for Tech sector); Tech, Stable Quarter Reported for Tech Sector Amid Mixed Market Signals, 0 (neutral for tech sector); Tech, Breakthrough in Artificial Intelligence Technology Promises to Catapult Tech Sector to New Highs, 100 (great for tech sector); Yech, Global Financial Crisis Looms: Interest Rates Surge Unexpectedly, 0 (although it is bad for finance sector, but it will not impact tech sector). Make sure you only have 1 numerical output, no explanation."
+>>>>>>> bd87e1a9a17dccbf6bafca5867e0391cfe472ea3
 def read_api_key(file_path):
     with open(file_path, 'r') as file:
         return file.read().strip()
@@ -53,8 +57,17 @@ def process_titles_average_score(titles_dict):
                         messages.append({"role": "assistant", "content": score})
                     except Exception as e:
                         print(f"An error occurred: {e}")
+<<<<<<< HEAD
 
     return sum(scores_list) / len(scores_list) if len(scores_list) > 0 else 0
+=======
+    print(scores_list)
+    return sum(scores_list) / len(scores_list) if scores_list else 0
+
+
+
+import re
+>>>>>>> bd87e1a9a17dccbf6bafca5867e0391cfe472ea3
 
 
 def convert_to_int_list(file_path):
@@ -109,8 +122,17 @@ def calculate_overall_average(file_path):
 
 
 openai.api_key = read_api_key('api_key.txt')
+<<<<<<< HEAD
 """
 input_file = scrap.gather_headlines(2023, 5, 10)
+=======
+
+input_file = scrap.gather_headlines(2023, 1, 9)
+#['Commodities', 'Tech', 'Finance']
+
+#input_file= {'Tech': ['Microsoft’s $75 Billion Activision Deal Cleared by EU'], 'Commodities': ['Microsoft’s $75 Billion Activision Deal Cleared by EU'], 'Finance': ['How El Niño Could Scramble Commodity Markets']}
+
+>>>>>>> bd87e1a9a17dccbf6bafca5867e0391cfe472ea3
 print("\n")
 scrap.print_results(input_file)
 print("\n")
