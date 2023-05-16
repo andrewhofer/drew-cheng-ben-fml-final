@@ -14,14 +14,17 @@ indicators.data = df
 indicators.symbol = 'XLK'
 
 # Add indicators
+indicators.add_sma(25)
 indicators.add_sma(50)
-indicators.add_sma(200)
 indicators.add_obv()
 indicators.add_adl()
 indicators.add_adx(14)
 indicators.add_macd(12, 26, 9)
 indicators.add_rsi(14)
 indicators.add_stochastic_oscillator(14)
+indicators.data = indicators.data.dropna()
+print(indicators.data)
+indicators.normalize()
 print(indicators.data)
 
 # Define state and action dimensions
@@ -35,7 +38,6 @@ shares = 1000
 prices = ind.get_data('2010-01-01', '2010-12-31', ['XLK'], include_spy=False)
 prices['Trades'], prices['Holding'] = 0, 0
 fresh_frame = prices.copy()
-print(prices)
 for i in range(500):
     current_holding = 0
     data = fresh_frame.copy()
@@ -46,7 +48,7 @@ for i in range(500):
     # Loop over the data
     for j in range(len(indicators.data)):
         state = []
-        for indicator in ['SMA_50', 'SMA_200', 'OBV', 'ADL', 'ADX', 'MACD', 'RSI', 'Sto_Osc']:
+        for indicator in ['SMA_25', 'SMA_50', 'OBV', 'ADL', 'ADX', 'MACD', 'RSI', 'Sto_Osc']:
             state.append(indicators.get_indicator(indicator, j))
 
         state = np.array(state)

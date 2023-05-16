@@ -39,6 +39,25 @@ class TechnicalIndicators:
         """Get the value of a given indicator at a given day."""
         return self.data[indicator_name].iloc[day]
 
+    def normalize(self):
+        norm_25 = (self.data['SMA_25'] - self.data['SMA_25'].mean()) / self.data['SMA_25'].std()
+        self.data['SMA_25'] = norm_25
+        norm_50 = (self.data['SMA_50'] - self.data['SMA_50'].mean()) / self.data['SMA_50'].std()
+        self.data['SMA_50'] = norm_50
+        norm_obv = (self.data['OBV'] - self.data['OBV'].mean()) / self.data['OBV'].std()
+        self.data['OBV'] = norm_obv
+        norm_adl = (self.data['ADL'] - self.data['ADL'].mean()) / self.data['ADL'].std()
+        self.data['ADL'] = norm_adl
+        norm_adx = (self.data['ADX'] - self.data['ADX'].mean()) / self.data['ADX'].std()
+        self.data['ADX'] = norm_adx
+        norm_mac = (self.data['MACD'] - self.data['MACD'].mean()) / self.data['MACD'].std()
+        self.data['MACD'] = norm_mac
+        norm_rsi = (self.data['RSI'] - self.data['RSI'].mean()) / self.data['RSI'].std()
+        self.data['RSI'] = norm_rsi
+        norm_osc = (self.data['Sto_Osc'] - self.data['Sto_Osc'].mean()) / self.data['Sto_Osc'].std()
+        self.data['Sto_Osc'] = norm_osc
+
+
 def get_data(start_date, end_date, symbols, column_name='Adj Close', include_spy=True):
     """
     Gets adjusted close data from start_date to end_date for the requested 

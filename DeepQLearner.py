@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 
 class DeepQLearner:
-    def __init__ (self, state_dim = 3, action_dim = 3, alpha = 0.2, gamma = 0.9, epsilon = 0.98,
+    def __init__ (self, state_dim = 3, action_dim = 3, alpha = 0.9, gamma = 0.9, epsilon = 0.98,
                   epsilon_decay = 0.999, hidden_sizes = (32, 32), buffer_size = 100, batch_size = 32):
         # Store all the parameters as attributes (instance variables).
         # Initialize any data structures you need.
@@ -48,6 +48,7 @@ class DeepQLearner:
         #           How will you know the previous state and action?
         current_state = np.array([s])
         q_vals = self.model.predict(current_state)
+        print("Q-values in train:", q_vals)
         a = np.argmax(q_vals)
 
         self.experience_buffer.append((self.prev_s, self.prev_a, current_state, r))
@@ -95,7 +96,11 @@ class DeepQLearner:
 
     def choose_action(self, s):
         if random.random() < self.epsilon:
-            return np.random.randint(self.action_dim)
+            result =  np.random.randint(self.action_dim).item()
+            print("Returning", result)
+            return result
         else:
             q_vals = self.model.predict(np.array(s))
-            return np.argmax(q_vals)
+            result = np.argmax(q_vals)
+            print("Returning", result)
+            return result
