@@ -1,0 +1,6 @@
+Tech
++70
+Finance
++60
+Commodities
+-40
