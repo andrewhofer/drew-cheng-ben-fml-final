@@ -7,9 +7,9 @@ import DeepQLearner as Q
 import chatGPT as gpt
 
 # Initialize the indicator class
-indicators = ind.TechnicalIndicators()
+# indicators = ind.TechnicalIndicators()
 
-start_date = '2019-01-01'
+start_date = '2019-03-14'
 end_date = '2020-12-31'
 symbol = 'XLK'
 shares = 1000
@@ -28,7 +28,8 @@ prices = ind.get_data(start_date, end_date, [symbol], include_spy=False)
 prices['Trades'], prices['Holding'] = 0, 0
 fresh_frame = prices.copy()
 # Training trips
-for i in range(10):
+cum_frame = 0
+for i in range(50):
     current_holding = 0
     data = fresh_frame.copy()
     cash = starting_cash
@@ -101,7 +102,7 @@ prices = (prices / prices[symbol].iloc[0]) - 1
 pp.plot(prices, color='b', label='XLK')
 pp.plot(cum_frame, color='r', label='Q–Learned Strategy')
 pp.legend()
-pp.title("1 test run vs. price")
+pp.title("Final test run vs. Benchmark")
 pp.xlabel("Date")
 pp.ylabel("Cumulative Returns")
 pp.grid()

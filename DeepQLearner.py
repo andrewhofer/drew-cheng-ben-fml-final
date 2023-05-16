@@ -5,8 +5,8 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
 
 class DeepQLearner:
-    def __init__ (self, state_dim = 3, action_dim = 3, alpha = 0.9, gamma = 0.9, epsilon = 0.98,
-                  epsilon_decay = 0.999, hidden_sizes = (32, 32), buffer_size = 100, batch_size = 32):
+    def __init__ (self, state_dim = 3, action_dim = 3, alpha = 0.8, gamma = 0.9, epsilon = 0.98,
+                  epsilon_decay = 0.999, hidden_layers = 3, buffer_size = 100, batch_size = 32):
         # Store all the parameters as attributes (instance variables).
         # Initialize any data structures you need.
         self.state_dim = state_dim
@@ -18,7 +18,7 @@ class DeepQLearner:
         self.buffer_size = buffer_size
         self.batch_size = batch_size
         self.experience_buffer = []
-        self.hidden_sizes = hidden_sizes
+        self.hidden_sizes = [state_dim*action_dim for _ in range(hidden_layers)]
         self.prev_s = [0 for _ in range(state_dim)]
         self.prev_a = 0
 
@@ -50,7 +50,7 @@ class DeepQLearner:
         current_state = np.array([s])
         q_vals = self.model.predict(current_state, verbose=0)
         print("Q-values in train:", q_vals)
-        a = np.argmax(q_vals)
+        a = self.choose_action(s)
 
         self.experience_buffer.append((self.prev_s, self.prev_a, current_state, r))
 
@@ -79,6 +79,7 @@ class DeepQLearner:
         self.prev_s = s
         self.prev_a = a
         self.epsilon *= self.epsilon_decay
+        print("epsilon: " + str(self.epsilon))
         return a
 
     def test(self, s):
@@ -88,7 +89,7 @@ class DeepQLearner:
         # (2) when there is no previous state or action (and hence no Q-update to perform).
         #
         # When testing, you probably do not want to take random actions... (What good would it do?)
-        q_vals = self.model.predict(np.array([s]))
+        q_vals = self.model.predict(np.array([s]), verbose=0)
         a = np.argmax(q_vals)
         self.prev_s = s
         self.prev_a = a
@@ -97,8 +98,9 @@ class DeepQLearner:
 
     def choose_action(self, s):
         if random.random() < self.epsilon:
-            result =  np.random.randint(self.action_dim).item()
+            result =  np.random.randint(self.action_dim)
             print("Returning", result)
+            print("RANDOM")
             return result
         else:
             q_vals = self.model.predict(np.array([s]), verbose=0)
