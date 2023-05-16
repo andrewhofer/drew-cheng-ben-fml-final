@@ -94,8 +94,6 @@ def assess_strategy(start, end, trades, symbol, starting_value):
     trades['PORTFOLIO'] = 0
     prev_cash = starting_value
 
-    print(trades)
-
     for i in range(len(trades)):
         curr_trade = trades.iloc[i, 1]
         curr_price = trades.iloc[i, 0]

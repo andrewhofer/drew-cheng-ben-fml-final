@@ -22,10 +22,10 @@ def gather_headlines(year, month, day):
 
         if header in important:
             if header in dictionary.keys(): 
-                dictionary[header].append(text)
+                dictionary[header].append(text.strip())
                         
             else: 
-                dictionary[header] = [text]
+                dictionary[header] = [text.strip()]
 
     return dictionary
 

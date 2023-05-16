@@ -1,6 +1,7 @@
 import random
-
 import numpy as np
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
 
 class DeepQLearner:
@@ -87,7 +88,7 @@ class DeepQLearner:
         # (2) when there is no previous state or action (and hence no Q-update to perform).
         #
         # When testing, you probably do not want to take random actions... (What good would it do?)
-        q_vals = self.model.predict(np.array(s))
+        q_vals = self.model.predict(np.array([s]))
         a = np.argmax(q_vals)
         self.prev_s = s
         self.prev_a = a
