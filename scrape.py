@@ -3,15 +3,10 @@ A web scrpaing program for gathering headlines frm WSJ
 """
 import requests
 import bs4
-
-def main():
-
-    headlines = gather_headlines(2023, 5, 15)
-    print_results(headlines)
     
 def gather_headlines(year, month, day):
 
-    important = ['Commodities', 'Tech', 'Finance']
+    important = ['Tech']
     dictionary = {}
 
     url = 'https://www.wsj.com/news/archive/' + str(year) + "/" + str(month) + "/" + str(day)
@@ -41,5 +36,3 @@ def print_results(quotes):
 
         for item in range(0, len(value)):
             print("–", value[item])
-
-main()

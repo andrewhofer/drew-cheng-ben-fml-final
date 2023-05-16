@@ -3,6 +3,7 @@ import indicators as ind
 import matplotlib as pp
 import scrape as scrap
 import DeepQLearner as Q
+import chatGPT as gpt
 
 # Initialize the indicator class
 indicators = ind.TechnicalIndicators()
@@ -37,13 +38,23 @@ del indicators.data['Close']
 del indicators.data['Volume']
 del indicators.data[symbol]
 
+indicators.data['GPT Sent'] = 0
+
 for j in range(len(indicators.data)):
     curr_day = indicators.data.iloc[[j]]
     year = str(curr_day.index.year.tolist()[0])
     month = str(curr_day.index.month.tolist()[0])
     day = str(curr_day.index.day.tolist()[0])
     lines = scrap.gather_headlines(year, month, day)
-    print(lines)
+    headlines = lines.get('Tech')
+    score = 0
+    if headlines is not None:
+        score = gpt.process_titles(headlines)
+
+    indicators.data['GPT Sent'].iloc[j] = score
+
+    print(str(j) + " of " + str(len(indicators.data)) + " done.")
+
 
 
 
