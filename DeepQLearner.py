@@ -5,7 +5,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
 
 class DeepQLearner:
-    def __init__ (self, state_dim = 3, action_dim = 3, alpha = 0.8, gamma = 0.9, epsilon = 0.98,
+    def __init__ (self, state_dim = 3, action_dim = 3, alpha = 0.9, gamma = 0.9, epsilon = 0.98,
                   epsilon_decay = 0.999, hidden_layers = 3, buffer_size = 100, batch_size = 32):
         # Store all the parameters as attributes (instance variables).
         # Initialize any data structures you need.
@@ -79,7 +79,6 @@ class DeepQLearner:
         self.prev_s = s
         self.prev_a = a
         self.epsilon *= self.epsilon_decay
-        print("epsilon: " + str(self.epsilon))
         return a
 
     def test(self, s):
@@ -100,7 +99,6 @@ class DeepQLearner:
         if random.random() < self.epsilon:
             result =  np.random.randint(self.action_dim)
             print("Returning", result)
-            print("RANDOM")
             return result
         else:
             q_vals = self.model.predict(np.array([s]), verbose=0)
