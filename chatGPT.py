@@ -94,7 +94,9 @@ scores_file = 'scores.txt'
 scores = convert_to_int_list(scores_file)
 sector_averages = calculate_average_each_sector(scores_file)
 overall_average = calculate_overall_average(scores_file)
-print(scores)
+
+print("'Tech': ['Microsoft’s $75 Billion Activision Deal Cleared by EU','multiple of CEOs of major Tech companies leaked to all having affairs for years'], 'Finance': ['Berkshire Hathaway Opens New Position in Capital One, Exits BNY Mellon'], 'Commodities': ['How El Niño Could Scramble Commodity Markets']")
+print(f'score of each string {scores}')
 print(f'average of each sector {sector_averages}')
 print(f'overall average among all sectors {overall_average}')
 
