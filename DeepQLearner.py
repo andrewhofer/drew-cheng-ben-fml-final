@@ -6,7 +6,7 @@ import tensorflow as tf
 
 class DeepQLearner:
     def __init__ (self, state_dim = 3, action_dim = 3, alpha = 0.9, gamma = 0.9, epsilon = 0.98,
-                  epsilon_decay = 0.999, hidden_layers = 3, buffer_size = 100, batch_size = 32):
+                  epsilon_decay = 0.999, hidden_layers = 2, buffer_size = 100, batch_size = 32):
         # Store all the parameters as attributes (instance variables).
         # Initialize any data structures you need.
         self.state_dim = state_dim
@@ -18,7 +18,7 @@ class DeepQLearner:
         self.buffer_size = buffer_size
         self.batch_size = batch_size
         self.experience_buffer = []
-        self.hidden_sizes = [state_dim*action_dim for _ in range(hidden_layers)]
+        self.hidden_sizes = [32 for _ in range(hidden_layers)]
         self.prev_s = [0 for _ in range(state_dim)]
         self.prev_a = 0
 
