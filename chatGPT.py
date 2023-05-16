@@ -1,4 +1,3 @@
-import os
 import openai
 
 def read_api_key(file_path):
@@ -24,7 +23,6 @@ def process_titles(titles_dict):
                     score = chat.choices[0].message.content
                     out_file.write(score + '\n')
 
-                    # Add assistant's reply to the messages
                     messages.append({"role": "assistant", "content": score})
 
 import re
@@ -42,9 +40,28 @@ def convert_to_int_list(file_path):
     return int_list
 
 
+def calculate_averages(file_path):
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+    averages = []
+    temp_list = []
+    for line in lines:
+        match = re.search(r'[-+]?\d+', line)
+        if match:
+            temp_list.append(int(match.group()))
+        else:
+            if temp_list:
+                averages.append(sum(temp_list) / len(temp_list))
+                temp_list = []
+    if temp_list:
+        averages.append(sum(temp_list) / len(temp_list))
+
+    return averages
 
 
-# Read the API key from a text file
+
+
+
 openai.api_key = read_api_key('api_key.txt')
 
 
@@ -53,7 +70,9 @@ process_titles(input_file)
 
 scores_file = 'scores.txt'
 scores = convert_to_int_list(scores_file)
+averages = calculate_averages(scores_file)
 print(scores)
+print(averages)
 
 
 
