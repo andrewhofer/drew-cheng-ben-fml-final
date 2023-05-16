@@ -3,11 +3,15 @@ import numpy as np
 import indicators as ind
 import DeepQLearner as Q
 
-# Load your data
-data = pd.read_csv('data/DIS.csv')
-
 # Initialize the indicator class
-indicators = ind.TechnicalIndicators(data)
+indicators = ind.TechnicalIndicators()
+df = ind.get_data('2010-01-01', '2010-12-31', ['XLK'], include_spy=False)
+df['High'] = ind.get_data('2010-01-01', '2010-12-31', ['XLK'], column_name='High', include_spy=False)
+df['Low'] = ind.get_data('2010-01-01', '2010-12-31', ['XLK'], column_name='Low', include_spy=False)
+df['Close'] = ind.get_data('2010-01-01', '2010-12-31', ['XLK'], column_name='Close', include_spy=False)
+df['Volume'] = ind.get_data('2010-01-01', '2010-12-31', ['XLK'], column_name='Volume', include_spy=False)
+indicators.data = df
+indicators.symbol = 'XLK'
 
 # Add indicators
 indicators.add_sma(50)
@@ -18,6 +22,7 @@ indicators.add_adx(14)
 indicators.add_macd(12, 26, 9)
 indicators.add_rsi(14)
 indicators.add_stochastic_oscillator(14)
+print(indicators.data)
 
 # Define state and action dimensions
 state_dim = 9
