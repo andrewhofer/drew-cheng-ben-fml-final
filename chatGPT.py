@@ -45,7 +45,7 @@ def convert_to_int_list(file_path):
     return int_list
 
 
-def calculate_averages(file_path):
+def calculate_average_each_sector(file_path):
     with open(file_path, 'r') as file:
         lines = file.readlines()
     averages = []
@@ -63,6 +63,23 @@ def calculate_averages(file_path):
 
     return averages
 
+def calculate_overall_average(file_path):
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+
+    score_sum = 0
+    score_count = 0
+
+    for line in lines:
+        match = re.search(r'[-+]?\d+', line)
+        if match:
+            score_sum += int(match.group())
+            score_count += 1
+
+    if score_count > 0:
+        return score_sum / score_count
+    else:
+        return None
 
 
 
@@ -70,14 +87,17 @@ def calculate_averages(file_path):
 openai.api_key = read_api_key('api_key.txt')
 
 
-input_file = {'Tech': ['Microsoft’s $75 Billion Activision Deal Cleared by EU'], 'Finance': ['Berkshire Hathaway Opens New Position in Capital One, Exits BNY Mellon'], 'Commodities': ['How El Niño Could Scramble Commodity Markets']}
+input_file = {'Tech': ['Microsoft’s $75 Billion Activision Deal Cleared by EU','multiple of CEOs of major Tech companies leaked to all having affairs for years'], 'Finance': ['Berkshire Hathaway Opens New Position in Capital One, Exits BNY Mellon'], 'Commodities': ['How El Niño Could Scramble Commodity Markets']}
 process_titles(input_file)
 
 scores_file = 'scores.txt'
 scores = convert_to_int_list(scores_file)
-averages = calculate_averages(scores_file)
+sector_averages = calculate_average_each_sector(scores_file)
+overall_average = calculate_overall_average(scores_file)
 print(scores)
-print(averages)
+print(f'average of each sector {sector_averages}')
+print(f'overall average among all sectors {overall_average}')
+
 
 
 
