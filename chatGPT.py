@@ -11,6 +11,11 @@ def process_titles(titles_dict):
             {"role": "system", "content": ""
                                           ""
                                           "Please return a single numerical score ranging from -100 to +100 for each of the following news article titles for their sector. A score of -100 indicates extreme negative sentiment that could potentially have a disastrous impact on the stock price of that specific sector. A score of 0 is neutral, perhaps neither impacting that market sector positively or negatively. A score of +100 indicates extreme positive sentiment that could potentially have a highly beneficial impact on that sector’s stock price. Make sure that is the impact on that specific sector, not the impact on the macro markets or other non-related markets. If you think that this is not a news article title or will not impact the financial market as a whole, return 0. And remember to provide only numerical responses, no explanation at all, especially when it is 0."
+
+                                          + "\n"
+
+                                          + "Here are some examples and guidelines: “Commodities, Widespread Drought Devastates Global Crop Production, Commodities Prices to Skyrocket, -100; Tech, Tech Industry Under Threat: Major Data Breach Affects All Big-Tech Companies such as Google, Meta, Microsoft, -100; Tech, Stable Quarter Reported for Tech Sector Amid Mixed Market Signals, 0; Tech, Breakthrough in Artificial Intelligence Technology Promises to Catapult Tech Sector to New Highs, 100; Finance, Global Financial Crisis Looms: Interest Rates Surge Unexpectedly, -100; Finance, Sudden Surge in Global IPO Activity: Financial Sector Set for Record Profits, +100”"
+
                                           },
         ]
         for key, title_list in titles_dict.items():
