@@ -82,10 +82,7 @@ class DeepQLearner:
         self.prev_s = s
         self.prev_a = a
         self.epsilon *= self.epsilon_decay
-<<<<<<< HEAD
         #print("epsilon: " + str(self.epsilon))
-=======
->>>>>>> be0be1c13a8b11a374628c3e47a99a9dd96ea7e3
         return a
 
     def test(self, s):
@@ -105,12 +102,8 @@ class DeepQLearner:
     def choose_action(self, s):
         if random.random() < self.epsilon:
             result =  np.random.randint(self.action_dim)
-<<<<<<< HEAD
             #print("Returning", result)
             #print("RANDOM")
-=======
-            print("Returning", result)
->>>>>>> be0be1c13a8b11a374628c3e47a99a9dd96ea7e3
             return result
         else:
             q_vals = self.model.predict(np.array([s]), verbose=0)
