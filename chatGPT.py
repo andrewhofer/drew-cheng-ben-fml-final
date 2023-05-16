@@ -54,17 +54,8 @@ def process_titles_average_score(titles_dict):
                         messages.append({"role": "assistant", "content": score})
                     except Exception as e:
                         print(f"An error occurred: {e}")
-<<<<<<< HEAD
 
     return sum(scores_list) / len(scores_list) if len(scores_list) > 0 else 0
-=======
-    print(scores_list)
-    return sum(scores_list) / len(scores_list) if scores_list else 0
-
-
-
-import re
->>>>>>> bd87e1a9a17dccbf6bafca5867e0391cfe472ea3
 
 
 def convert_to_int_list(file_path):
@@ -119,17 +110,8 @@ def calculate_overall_average(file_path):
 
 
 openai.api_key = read_api_key('api_key.txt')
-<<<<<<< HEAD
 """
 input_file = scrap.gather_headlines(2023, 5, 10)
-=======
-
-input_file = scrap.gather_headlines(2023, 1, 9)
-#['Commodities', 'Tech', 'Finance']
-
-#input_file= {'Tech': ['Microsoft’s $75 Billion Activision Deal Cleared by EU'], 'Commodities': ['Microsoft’s $75 Billion Activision Deal Cleared by EU'], 'Finance': ['How El Niño Could Scramble Commodity Markets']}
-
->>>>>>> bd87e1a9a17dccbf6bafca5867e0391cfe472ea3
 print("\n")
 scrap.print_results(input_file)
 print("\n")

@@ -28,7 +28,7 @@ prices = ind.get_data(start_date, end_date, [symbol], include_spy=False)
 prices['Trades'], prices['Holding'] = 0, 0
 fresh_frame = prices.copy()
 # Training trips
-for i in range(1):
+for i in range(10):
     current_holding = 0
     data = fresh_frame.copy()
     cash = starting_cash
@@ -43,8 +43,8 @@ for i in range(1):
 
         state = np.array(state)
         price = data[symbol].iloc[j]
-        position_value = current_holding * price
-        reward = position_value + cash - starting_cash
+        curr_portfolio = cash + (current_holding * price)
+        reward = (curr_portfolio / starting_cash) - 1
 
         if j == 0:
             action = dqn.test(state)
@@ -97,6 +97,7 @@ for i in range(1):
     print("Training trip " + str(i) + " net profit: $" + str(round(total_cum-starting_cash, 2)))
 
 prices = ind.get_data(start_date, end_date, [symbol], include_spy=False)
+prices = (prices / prices[symbol].iloc[0]) - 1
 pp.plot(prices, color='b', label='XLK')
 pp.plot(cum_frame, color='r', label='Q–Learned Strategy')
 pp.legend()
