@@ -6,7 +6,7 @@ import pandas as pd
 
 class DeepQLearner:
     def __init__ (self, state_dim = 3, action_dim = 3, alpha = 0.2, gamma = 0.9, epsilon = 0.98,
-                  epsilon_decay = 0.999, hidden_sizes = (32, 32), buffer_size = 200, batch_size = 50):
+                  epsilon_decay = 0.999, hidden_sizes = (32, 32), buffer_size = 100, batch_size = 32):
         # Store all the parameters as attributes (instance variables).
         # Initialize any data structures you need.
         self.state_dim = state_dim
