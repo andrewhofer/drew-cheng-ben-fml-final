@@ -37,7 +37,7 @@ class TechnicalIndicators:
 
     def get_indicator(self, indicator_name: str, day: int):
         """Get the value of a given indicator at a given day."""
-        return self.data.loc[day, indicator_name]
+        return self.data[indicator_name].iloc[day]
 
 def get_data(start_date, end_date, symbols, column_name='Adj Close', include_spy=True):
     """
