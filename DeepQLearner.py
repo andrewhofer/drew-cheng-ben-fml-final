@@ -70,7 +70,7 @@ class DeepQLearner:
         next_q_values = self.model.predict(next_states)
         max_next_q_values = np.max(next_q_values, axis=1)
         targets = rewards + self.gamma * np.amax(max_next_q_values, axis=1)
-        prev_q_values[np.arange(self.batch_size), prev_actions] = targets.reshape(-1)
+        prev_q_values[np.arange(self.batch_size), prev_actions] = targets
 
         self.model.fit(prev_states, prev_q_values, verbose=0)
 
