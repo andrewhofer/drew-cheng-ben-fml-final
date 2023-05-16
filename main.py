@@ -1,4 +1,3 @@
-import pandas as pd
 import numpy as np
 import indicators as ind
 import DeepQLearner as Q
@@ -11,7 +10,7 @@ df['High'] = ind.get_data('2010-01-01', '2010-12-31', ['XLK'], column_name='High
 df['Low'] = ind.get_data('2010-01-01', '2010-12-31', ['XLK'], column_name='Low', include_spy=False)
 df['Close'] = ind.get_data('2010-01-01', '2010-12-31', ['XLK'], column_name='Close', include_spy=False)
 df['Volume'] = ind.get_data('2010-01-01', '2010-12-31', ['XLK'], column_name='Volume', include_spy=False)
-
+print(df)
 indicators.data = df
 indicators.symbol = 'XLK'
 

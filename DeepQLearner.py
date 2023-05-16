@@ -2,7 +2,6 @@ import random
 
 import numpy as np
 import tensorflow as tf
-import pandas as pd
 
 class DeepQLearner:
     def __init__ (self, state_dim = 3, action_dim = 3, alpha = 0.2, gamma = 0.9, epsilon = 0.98,
@@ -32,13 +31,13 @@ class DeepQLearner:
             model.add(tf.keras.layers.Dense(layer_size, activation='relu'))
 
         model.add(tf.keras.layers.Dense(self.action_dim, activation='linear'))
-        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=self.alpha),
+        model.compile(optimizer=tf.keras.optimizers.legacy.Adam(learning_rate=self.alpha),
                       loss='mse')
         return model
 
     def sample_from_buffer(self):
         if len(self.experience_buffer) < self.batch_size:
-            return self.experience_buffer
+            return random.choices(self.experience_buffer, k=self.batch_size)
         else:
             return random.sample(self.experience_buffer, self.batch_size)
 
@@ -47,7 +46,7 @@ class DeepQLearner:
         # Receive new state s and new reward r.  Update Q-table and return selected action.
         # Consider: The Q-update requires a complete <s, a, s', r> tuple.
         #           How will you know the previous state and action?
-        current_state = np.array(s)
+        current_state = np.array([s])
         q_vals = self.model.predict(current_state)
         a = np.argmax(q_vals)
 
@@ -70,8 +69,8 @@ class DeepQLearner:
         prev_q_values = self.model.predict(prev_states)
         next_q_values = self.model.predict(next_states)
         max_next_q_values = np.max(next_q_values, axis=1)
-        targets = rewards + self.gamma * max_next_q_values
-        prev_q_values[np.arange(self.batch_size), prev_actions] = targets
+        targets = rewards + self.gamma * np.amax(max_next_q_values, axis=1)
+        prev_q_values[np.arange(self.batch_size), prev_actions] = targets.reshape(-1)
 
         self.model.fit(prev_states, prev_q_values, verbose=0)
 

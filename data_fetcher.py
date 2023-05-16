@@ -1,6 +1,5 @@
 # yfinance requires pandas 1.3.5, breaks with 1.4.0
 import yfinance as yf
-import pandas as pd
 
 tickerStrings = ['COMT','XLK','XLF']
 
