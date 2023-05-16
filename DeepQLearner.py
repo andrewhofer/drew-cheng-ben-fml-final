@@ -47,7 +47,7 @@ class DeepQLearner:
         # Consider: The Q-update requires a complete <s, a, s', r> tuple.
         #           How will you know the previous state and action?
         current_state = np.array([s])
-        q_vals = self.model.predict(current_state)
+        q_vals = self.model.predict(current_state, verbose=0)
         print("Q-values in train:", q_vals)
         a = np.argmax(q_vals)
 
@@ -67,8 +67,8 @@ class DeepQLearner:
         next_states = np.array(next_states)
         rewards = np.array(rewards)
 
-        prev_q_values = self.model.predict(prev_states)
-        next_q_values = self.model.predict(next_states)
+        prev_q_values = self.model.predict(prev_states, verbose=0)
+        next_q_values = self.model.predict(next_states, verbose=0)
         max_next_q_values = np.max(next_q_values, axis=1)
         targets = rewards + self.gamma * np.amax(max_next_q_values, axis=1)
         prev_q_values[np.arange(self.batch_size), prev_actions] = targets
@@ -87,7 +87,7 @@ class DeepQLearner:
         # (2) when there is no previous state or action (and hence no Q-update to perform).
         #
         # When testing, you probably do not want to take random actions... (What good would it do?)
-        q_vals = self.model.predict(np.array(s))
+        q_vals = self.model.predict(np.array([s]), verbose=0)
         a = np.argmax(q_vals)
         self.prev_s = s
         self.prev_a = a
@@ -100,7 +100,7 @@ class DeepQLearner:
             print("Returning", result)
             return result
         else:
-            q_vals = self.model.predict(np.array(s))
+            q_vals = self.model.predict(np.array([s]), verbose=0)
             result = np.argmax(q_vals)
             print("Returning", result)
             return result
