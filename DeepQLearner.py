@@ -42,6 +42,9 @@ class DeepQLearner:
         else:
             return random.sample(self.experience_buffer, self.batch_size)
 
+    def save_model(self):
+        self.model.save('test_model')
+
 
     def train(self, s, r):
         # Receive new state s and new reward r.  Update Q-table and return selected action.
@@ -79,7 +82,7 @@ class DeepQLearner:
         self.prev_s = s
         self.prev_a = a
         self.epsilon *= self.epsilon_decay
-        print("epsilon: " + str(self.epsilon))
+        #print("epsilon: " + str(self.epsilon))
         return a
 
     def test(self, s):
@@ -99,11 +102,11 @@ class DeepQLearner:
     def choose_action(self, s):
         if random.random() < self.epsilon:
             result =  np.random.randint(self.action_dim)
-            print("Returning", result)
-            print("RANDOM")
+            #print("Returning", result)
+            #print("RANDOM")
             return result
         else:
             q_vals = self.model.predict(np.array([s]), verbose=0)
             result = np.argmax(q_vals)
-            print("Returning", result)
+            #print("Returning", result)
             return result
