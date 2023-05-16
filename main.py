@@ -1,17 +1,24 @@
 import numpy as np
 import indicators as ind
+import matplotlib as pp
+import scrape as scrap
 import DeepQLearner as Q
 
 # Initialize the indicator class
 indicators = ind.TechnicalIndicators()
 
-df = ind.get_data('2010-01-01', '2010-12-31', ['XLK'], include_spy=False)
-df['High'] = ind.get_data('2010-01-01', '2010-12-31', ['XLK'], column_name='High', include_spy=False)
-df['Low'] = ind.get_data('2010-01-01', '2010-12-31', ['XLK'], column_name='Low', include_spy=False)
-df['Close'] = ind.get_data('2010-01-01', '2010-12-31', ['XLK'], column_name='Close', include_spy=False)
-df['Volume'] = ind.get_data('2010-01-01', '2010-12-31', ['XLK'], column_name='Volume', include_spy=False)
+start_date = '2019-01-01'
+end_date = '2020-12-31'
+symbol = 'XLK'
+shares = 1000
+
+df = ind.get_data(start_date, end_date, [symbol], include_spy=False)
+df['High'] = ind.get_data(start_date, end_date, [symbol], column_name='High', include_spy=False)
+df['Low'] = ind.get_data(start_date, end_date, [symbol], column_name='Low', include_spy=False)
+df['Close'] = ind.get_data(start_date, end_date, [symbol], column_name='Close', include_spy=False)
+df['Volume'] = ind.get_data(start_date, end_date, [symbol], column_name='Volume', include_spy=False)
 indicators.data = df
-indicators.symbol = 'XLK'
+indicators.symbol = symbol
 
 # Add indicators
 indicators.add_sma(25)
@@ -23,9 +30,24 @@ indicators.add_macd(12, 26, 9)
 indicators.add_rsi(14)
 indicators.add_stochastic_oscillator(14)
 indicators.data = indicators.data.dropna()
-print(indicators.data)
 indicators.normalize()
-print(indicators.data)
+del indicators.data['High']
+del indicators.data['Low']
+del indicators.data['Close']
+del indicators.data['Volume']
+del indicators.data[symbol]
+
+for j in range(len(indicators.data)):
+    curr_day = indicators.data.iloc[[j]]
+    year = str(curr_day.index.year.tolist()[0])
+    month = str(curr_day.index.month.tolist()[0])
+    day = str(curr_day.index.day.tolist()[0])
+    lines = scrap.gather_headlines(year, month, day)
+    print(lines)
+
+
+
+indicators.data.to_csv('test.csv', index=True)
 
 # Define state and action dimensions
 state_dim = 8
@@ -33,9 +55,7 @@ action_dim = 3
 # Initialize the DQN model
 dqn = Q.DeepQLearner(state_dim=state_dim, action_dim=action_dim)
 
-shares = 1000
-
-prices = ind.get_data('2010-01-01', '2010-12-31', ['XLK'], include_spy=False)
+prices = ind.get_data(start_date, end_date, [symbol], include_spy=False)
 prices['Trades'], prices['Holding'] = 0, 0
 fresh_frame = prices.copy()
 for i in range(500):
@@ -52,7 +72,7 @@ for i in range(500):
             state.append(indicators.get_indicator(indicator, j))
 
         state = np.array(state)
-        price = data['XLK'].iloc[j]
+        price = data[symbol].iloc[j]
         position_value = current_holding * price
         reward = position_value + cash - 200000
 
@@ -106,5 +126,5 @@ for i in range(500):
 
         # Print the action (just for debugging)
         print(f'Day {j}: Action {action}')
-    cum_frame, total_cum, adr, std = ind.assess_strategy('2010-01-01', '2010-12-31', data, 'XLK', 200000)
+    cum_frame, total_cum, adr, std = ind.assess_strategy(start_date, end_date, data, symbol, 200000)
     print("Training trip " + str(j) + " net profit: $" + str(round(total_cum-200000, 2)))
