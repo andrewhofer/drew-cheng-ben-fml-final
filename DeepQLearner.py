@@ -6,7 +6,7 @@ import tensorflow as tf
 
 class DeepQLearner:
     def __init__ (self, state_dim = 3, action_dim = 3, alpha = 0.9, gamma = 0.9, epsilon = 0.98,
-                  epsilon_decay = 0.999, hidden_layers = 2, buffer_size = 100, batch_size = 32):
+                  epsilon_decay = 0.999, hidden_layers = 3, buffer_size = 100, batch_size = 32):
         # Store all the parameters as attributes (instance variables).
         # Initialize any data structures you need.
         self.state_dim = state_dim
@@ -73,7 +73,7 @@ class DeepQLearner:
 
         prev_q_values = self.model.predict(prev_states, verbose=0)
         next_q_values = self.model.predict(next_states, verbose=0)
-        max_next_q_values = np.max(next_q_values, axis=1)
+        max_next_q_values = np.max(next_q_values, axis=2)
         targets = rewards + self.gamma * np.amax(max_next_q_values, axis=1)
         prev_q_values[np.arange(self.batch_size), prev_actions] = targets
 
