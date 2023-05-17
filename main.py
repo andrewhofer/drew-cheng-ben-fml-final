@@ -14,6 +14,9 @@ test_end = '2020-12-31'
 
 all_indicators = ['SMA_25', 'SMA_50', 'OBV', 'ADL', 'ADX', 'MACD', 'RSI', 'Sto_Osc', 'GPT Sent']
 
+indicators = pd.read_csv('XLK_Inds.csv')
+indicators.set_index('Date', inplace=True)
+
 symbol = 'XLK'
 shares = 1000
 starting_cash = 200000
@@ -25,22 +28,19 @@ action_dim = 3
 # Initialize the DQN model and load indicators
 dqn = Q.DeepQLearner(state_dim=state_dim, action_dim=action_dim,alpha = 0.9, gamma = 0.9, epsilon = 0.998,
                   epsilon_decay = 0.999, hidden_layers = 4, buffer_size = 150, batch_size = 64)
-indicators = pd.read_csv('XLK_Inds.csv')
 
 prices = ind.get_data(train_start, train_end, [symbol], include_spy=False)
 prices['Trades'], prices['Holding'] = 0, 0
 fresh_frame = prices.copy()
-indicators.set_index('Date', inplace=True)
 
 train_inds = indicators.loc[train_start:train_end]
-
 starting_stock_value = prices[symbol].iloc[0]
 
 days = 10
 flat_holding_penalty = 10
 
 # Training trips
-for i in range(20):
+for i in range(3):
     current_holding = 0
     data = fresh_frame.copy()
     cash = starting_cash
@@ -130,30 +130,149 @@ for i in range(20):
     cum_frame, total_cum, adr, std = ind.assess_strategy(train_start, train_end, data, symbol, starting_cash)
     print("Training trip " + str(i) + " net profit: $" + str(round(total_cum-starting_cash, 2)))
 
-    prices = ind.get_data(train_start, train_end, [symbol], include_spy=False)
-    prices = (prices / prices[symbol].iloc[0]) - 1  # Benchmark
-    pp.plot(prices, color='m', label='Buy and Hold Benchmarl')  # Benchmark
-    pp.plot(cum_frame, color='g', label='Q–Learned Strategy')
-    pp.legend()
-    pp.title("Benchmark vs test run " + str(i))
-    pp.xlabel("Date")
-    pp.ylabel("Cumulative Returns")
-    pp.grid()
-    pp.show()
+##############################################################################
+"""IN SAMPLE TESTING"""
+test_prices = ind.get_data(train_start, train_end, [symbol], include_spy=False)
+test_prices['Trades'], test_prices['Holding'] = 0, 0
+data = test_prices.copy()
 
+test_inds = indicators.loc[train_start:train_end]
 
+# Loop over the data
+for j in range(len(test_inds)):
+    state = []
+    for indicator in all_indicators:
+        state.append(test_inds[indicator].iloc[j])
+
+    state = np.array(state)
+    action = dqn.test(state)
+    print(action)
+
+    if action == 0:  # Buy
+        if current_holding < shares:
+            trade = shares
+            trade_val = price * trade
+            cash -= trade_val
+            current_holding += shares
+            data.iloc[j, 1] = trade
+            data.iloc[j, 2] = current_holding
+        else:
+            data.iloc[j, 1] = 0
+            data.iloc[j, 2] = current_holding
+    elif action == 1:  # Sell
+        if current_holding > -shares:
+            trade = -shares
+            trade_val = price * abs(trade)
+            cash += trade_val
+            current_holding -= shares
+            data.iloc[j, 1] = trade
+            data.iloc[j, 2] = current_holding
+        else:
+            data.iloc[j, 1] = 0
+            data.iloc[j, 2] = current_holding
+    else:  # Flat
+        if current_holding == shares: # Sell
+            trade = shares
+            trade_val = price * trade
+            cash += trade_val
+            current_holding = 0
+            data.iloc[j, 1] = -shares
+            data.iloc[j, 2] = current_holding
+        elif current_holding == -shares: # Buy
+            trade = shares
+            trade_val = price * trade
+            cash -= trade_val
+            current_holding = 0
+            data.iloc[j, 1] = shares
+            data.iloc[j, 2] = current_holding
+        else:
+            data.iloc[j, 1] = 0
+            data.iloc[j, 2] = current_holding
+
+print(data)
+
+# Get results of training trip
+cum_frame, total_cum, adr, std = ind.assess_strategy(train_start, train_end, data, symbol, starting_cash)
 
 prices = ind.get_data(train_start, train_end, [symbol], include_spy=False)
-prices = (prices / prices[symbol].iloc[0]) - 1 # Benchmark
-pp.plot(prices, color='m', label='Buy and Hold Benchmarl') # Benchmark
-pp.plot(cum_frame, color='g', label='Q–Learned Strategy')
+prices = (prices / prices[symbol].iloc[0]) - 1  # Benchmark
+pp.plot(prices, color='r', label='Buy and Hold Benchmark')  # Benchmark
+pp.plot(cum_frame, color='b', label='In Sample Q–Learned Strategy')
 pp.legend()
-pp.title("Final test run vs. Benchmark")
+pp.title("Benchmark vs In Sample Q–Learned Strategy")
 pp.xlabel("Date")
 pp.ylabel("Cumulative Returns")
 pp.grid()
 pp.show()
+##############################################################################
+"""OUT OF SAMPLE TESTING"""
+test_prices = ind.get_data(test_start, test_end, [symbol], include_spy=False)
+test_prices['Trades'], test_prices['Holding'] = 0, 0
+data = test_prices.copy()
 
+test_inds = indicators.loc[test_start:test_end]
 
+# Loop over the data
+for j in range(len(test_inds)):
+    state = []
+    for indicator in all_indicators:
+        state.append(test_inds[indicator].iloc[j])
 
-#[[11.961619  9.536394  9.122626]]
+    state = np.array(state)
+    action = dqn.test(state)
+    print(action)
+
+    if action == 0:  # Buy
+        if current_holding < shares:
+            trade = shares
+            trade_val = price * trade
+            cash -= trade_val
+            current_holding += shares
+            data.iloc[j, 1] = trade
+            data.iloc[j, 2] = current_holding
+        else:
+            data.iloc[j, 1] = 0
+            data.iloc[j, 2] = current_holding
+    elif action == 1:  # Sell
+        if current_holding > -shares:
+            trade = -shares
+            trade_val = price * abs(trade)
+            cash += trade_val
+            current_holding -= shares
+            data.iloc[j, 1] = trade
+            data.iloc[j, 2] = current_holding
+        else:
+            data.iloc[j, 1] = 0
+            data.iloc[j, 2] = current_holding
+    else:  # Flat
+        if current_holding == shares: # Sell
+            trade = shares
+            trade_val = price * trade
+            cash += trade_val
+            current_holding = 0
+            data.iloc[j, 1] = -shares
+            data.iloc[j, 2] = current_holding
+        elif current_holding == -shares: # Buy
+            trade = shares
+            trade_val = price * trade
+            cash -= trade_val
+            current_holding = 0
+            data.iloc[j, 1] = shares
+            data.iloc[j, 2] = current_holding
+        else:
+            data.iloc[j, 1] = 0
+            data.iloc[j, 2] = current_holding
+
+print(data)
+cum_frame, total_cum, adr, std = ind.assess_strategy(test_start, test_end, data, symbol, starting_cash)
+
+prices = ind.get_data(test_start, test_end, [symbol], include_spy=False)
+prices = (prices / prices[symbol].iloc[0]) - 1  # Benchmark
+pp.plot(prices, color='r', label='Buy and Hold Benchmark')  # Benchmark
+pp.plot(cum_frame, color='b', label='Out of Sample Q–Learned Strategy')
+pp.legend()
+pp.title("Benchmark vs Out of Sample Q–Learned Strategy")
+pp.xlabel("Date")
+pp.ylabel("Cumulative Returns")
+pp.grid()
+pp.show()
