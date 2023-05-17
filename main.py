@@ -7,9 +7,9 @@ import DeepQLearner as Q
 import chatGPT as gpt
 
 train_start = '2019-04-01'
-train_end = '2020-06-30'
+train_end = '2020-03-31'
 
-test_start = '2020-07-01'
+test_start = '2020-04-01'
 test_end = '2020-12-31'
 
 all_indicators = ['SMA_25', 'SMA_50', 'OBV', 'ADL', 'ADX', 'MACD', 'RSI', 'Sto_Osc', 'GPT Sent']
@@ -40,7 +40,7 @@ days = 1
 flat_holding_penalty = 1
 
 # Training trips
-for i in range(2):
+for i in range(30):
     current_holding = 0
     data = fresh_frame.copy()
     cash = starting_cash
@@ -48,6 +48,7 @@ for i in range(2):
     reward = 0
     stock_value_3_days_ago = starting_stock_value
     portfolio_3_days_ago = starting_cash
+    prev_action = None
 
     # Loop over the data
     for j in range(len(train_inds)):
@@ -58,6 +59,7 @@ for i in range(2):
         state = np.array(state)
         price = data[symbol].iloc[j]
         curr_portfolio = cash + (current_holding * price)
+        """
         if j >= days:
             stock_value_3_days_ago = data[symbol].iloc[j - days]
             portfolio_3_days_ago = cash + (data['Holding'].iloc[j - days] * data[symbol].iloc[j - days])
@@ -78,7 +80,12 @@ for i in range(2):
         reward += ((curr_portfolio / starting_cash) - 1)
         #reward *= j/10
         print(f'reward {reward}')
+        """
 
+        reward = (curr_portfolio / prev_portfolio) / 1
+        if prev_action == 2:
+            reward = 0
+        
         if j == 0:
             action = dqn.test(state)
         else:
@@ -107,7 +114,7 @@ for i in range(2):
                 data.iloc[j, 1] = 0
                 data.iloc[j, 2] = current_holding
         else:  # Flat
-            reward-=flat_holding_penalty
+            #reward-=flat_holding_penalty
             if current_holding == shares: # Sell
                 trade = shares
                 trade_val = price * trade
@@ -126,6 +133,8 @@ for i in range(2):
                 data.iloc[j, 1] = 0
                 data.iloc[j, 2] = current_holding
 
+        prev_action = action
+        prev_portfolio = curr_portfolio
         print(f'Day {j}: Action {action}')
 
     # Get results of training trip
@@ -191,6 +200,11 @@ prices = ind.get_data(train_start, train_end, [symbol], include_spy=False)
 prices['Trades'], prices['Holding'] = 0, shares
 prices['Trades'].iloc[0] = shares
 bench_frame, bench_cum, bench_adr, bench_std = ind.assess_strategy(train_start, train_end, prices, symbol, starting_cash)
+
+print("***IN SAMPLE TEST RESULTS***")
+print(total_cum, adr, std)
+print(bench_cum, bench_adr, bench_std)
+print("***IN SAMPLE TEST RESULTS***")
 
 pp.plot(bench_frame, color='r', label='Buy and Hold Benchmark')  # Benchmark
 pp.plot(cum_frame, color='b', label='In Sample Q–Learned Strategy')
@@ -270,6 +284,12 @@ prices = ind.get_data(test_start, test_end, [symbol], include_spy=False)
 prices['Trades'], prices['Holding'] = 0, shares
 prices['Trades'].iloc[0] = shares
 bench_frame, bench_cum, bench_adr, bench_std = ind.assess_strategy(test_start, test_end, prices, symbol, starting_cash)
+
+print("***OU OF SAMPLE TEST RESULTS***")
+print(total_cum, adr, std)
+print(bench_cum, bench_adr, bench_std)
+print("***OUT OF SAMPLE TEST RESULTS***")
+
 pp.plot(bench_frame, color='r', label='Buy and Hold Benchmark')  # Benchmark
 pp.plot(cum_frame, color='b', label='Out of Sample Q–Learned Strategy')
 pp.legend()
