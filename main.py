@@ -24,7 +24,7 @@ action_dim = 3
 
 # Initialize the DQN model and load indicators
 dqn = Q.DeepQLearner(state_dim=state_dim, action_dim=action_dim,alpha = 0.9, gamma = 0.9, epsilon = 0.998,
-                  epsilon_decay = 0.999, hidden_layers = 4, buffer_size = 150, batch_size = 64)
+                  epsilon_decay = 0.9998, hidden_layers = 2, buffer_size = 150, batch_size = 64)
 indicators = pd.read_csv('XLK_Inds.csv')
 
 prices = ind.get_data(train_start, train_end, [symbol], include_spy=False)
@@ -36,7 +36,7 @@ train_inds = indicators.loc[train_start:train_end]
 
 starting_stock_value = prices[symbol].iloc[0]
 
-days = 10
+days = 1
 flat_holding_penalty = 10
 
 # Training trips
@@ -46,8 +46,8 @@ for i in range(20):
     cash = starting_cash
     prev_portfolio = starting_cash
     reward = 0
-    stock_value_3_days_ago = starting_stock_value
-    portfolio_3_days_ago = starting_cash
+    stock_value_1_days_ago = starting_stock_value
+    portfolio_1_days_ago = starting_cash
 
     # Loop over the data
     for j in range(len(train_inds)):
@@ -59,22 +59,16 @@ for i in range(20):
         price = data[symbol].iloc[j]
         curr_portfolio = cash + (current_holding * price)
         if j >= days:
-            stock_value_3_days_ago = data[symbol].iloc[j - days]
-            portfolio_3_days_ago = cash + (data['Holding'].iloc[j - days] * data[symbol].iloc[j - days])
+            stock_value_1_days_ago = data[symbol].iloc[j - days]
+            portfolio_1_days_ago = cash + (data['Holding'].iloc[j - days] * data[symbol].iloc[j - days])
 
-        #reward = ((curr_portfolio / starting_cash) - 1)*100
-        #reward = ((curr_portfolio / starting_cash) - (price / starting_stock_value)) * 20
-        #reward = -((curr_portfolio / starting_cash) - (price / starting_stock_value)) ** 2 * 20
-        #performance_diff = (curr_portfolio / starting_cash) - (price / starting_stock_value)
-        performance_diff = (curr_portfolio / portfolio_3_days_ago) - (price / stock_value_3_days_ago)
-        # ...
+        performance_diff = (curr_portfolio / portfolio_1_days_ago) - (price / stock_value_1_days_ago)
 
-        if performance_diff < 0:  # Portfolio is underperforming
-            reward = performance_diff ** 2 * -60
-        else:  # Portfolio is outperforming or equal
-            reward = performance_diff ** 2 * 200
-        reward += ((curr_portfolio / starting_cash) - 1)*3
-        #reward *= j/10
+        # if performance_diff < 0:  # Portfolio is underperforming
+        #     reward = performance_diff * 2
+        # else:  # Portfolio is outperforming or equal
+        #     reward = performance_diff * 5
+        reward = ((curr_portfolio / starting_cash) - 1)*4+performance_diff
         print(f'reward {reward}')
 
         if j == 0:
