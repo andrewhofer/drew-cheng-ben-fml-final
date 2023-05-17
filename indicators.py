@@ -114,7 +114,7 @@ def assess_strategy(start, end, trades, symbol, starting_value):
             trades.iloc[i, 3] = prev_cash
         trades.iloc[i, 4] = trades.iloc[i, 3] + (trades.iloc[i, 0] * trades.iloc[i, 2])
 
-    print(trades)
+    #print(trades)
     cum_frame = (trades['PORTFOLIO'] / 200000) - 1
     adr = ((trades['PORTFOLIO'] / trades['PORTFOLIO'].shift()) - 1).mean()
     std_dr = ((trades['PORTFOLIO'] / trades['PORTFOLIO'].shift()) - 1).std()
