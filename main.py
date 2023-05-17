@@ -27,7 +27,7 @@ action_dim = 3
 
 # Initialize the DQN model and load indicators
 dqn = Q.DeepQLearner(state_dim=state_dim, action_dim=action_dim,alpha = 0.9, gamma = 0.9, epsilon = 0.998,
-                  epsilon_decay = 0.999, hidden_layers = 4, buffer_size = 150, batch_size = 64)
+                  epsilon_decay = 0.999, hidden_layers = 2, buffer_size = 150, batch_size = 64)
 
 prices = ind.get_data(train_start, train_end, [symbol], include_spy=False)
 prices['Trades'], prices['Holding'] = 0, 0
@@ -36,11 +36,11 @@ fresh_frame = prices.copy()
 train_inds = indicators.loc[train_start:train_end]
 starting_stock_value = prices[symbol].iloc[0]
 
-days = 10
-flat_holding_penalty = 10
+days = 1
+flat_holding_penalty = 1
 
 # Training trips
-for i in range(1):
+for i in range(2):
     current_holding = 0
     data = fresh_frame.copy()
     cash = starting_cash
@@ -70,10 +70,12 @@ for i in range(1):
         # ...
 
         if performance_diff < 0:  # Portfolio is underperforming
-            reward = performance_diff ** 2 * -60
+            print(f'Underperforming{performance_diff**2}')
+            reward = performance_diff **2 *-5
         else:  # Portfolio is outperforming or equal
-            reward = performance_diff ** 2 * 200
-        reward += ((curr_portfolio / starting_cash) - 1)*3
+            print(f'outperforming{performance_diff**2}')
+            reward = performance_diff **2 *6
+        reward += ((curr_portfolio / starting_cash) - 1)
         #reward *= j/10
         print(f'reward {reward}')
 
@@ -205,6 +207,9 @@ test_prices['Trades'], test_prices['Holding'] = 0, 0
 data = test_prices.copy()
 
 test_inds = indicators.loc[test_start:test_end]
+
+# Resetting cash and current_holding for out-of-sample testing
+cash = starting_cash
 current_holding = 0
 
 # Loop over the data
@@ -214,8 +219,8 @@ for j in range(len(test_inds)):
         state.append(test_inds[indicator].iloc[j])
 
     state = np.array(state)
+    price = data[symbol].iloc[j]  # Updating the price for the current day
     action = dqn.test(state)
-    print(action)
 
     if action == 0:  # Buy
         if current_holding < shares:
@@ -258,13 +263,13 @@ for j in range(len(test_inds)):
             data.iloc[j, 1] = 0
             data.iloc[j, 2] = current_holding
 
+
 cum_frame, total_cum, adr, std = ind.assess_strategy(test_start, test_end, data, symbol, starting_cash)
 
 prices = ind.get_data(test_start, test_end, [symbol], include_spy=False)
 prices['Trades'], prices['Holding'] = 0, shares
 prices['Trades'].iloc[0] = shares
 bench_frame, bench_cum, bench_adr, bench_std = ind.assess_strategy(test_start, test_end, prices, symbol, starting_cash)
-
 pp.plot(bench_frame, color='r', label='Buy and Hold Benchmark')  # Benchmark
 pp.plot(cum_frame, color='b', label='Out of Sample Q–Learned Strategy')
 pp.legend()
