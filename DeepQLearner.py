@@ -52,7 +52,7 @@ class DeepQLearner:
     def save_model(self):
         self.model.save('test_model')
 
-
+    #
     # def train(self, s, r):
     #     # Receive new state s and new reward r.  Update Q-table and return selected action.
     #     # Consider: The Q-update requires a complete <s, a, s', r> tuple.

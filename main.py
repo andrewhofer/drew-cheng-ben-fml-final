@@ -40,7 +40,7 @@ days = 1
 flat_holding_penalty = 1
 
 # Training trips
-for i in range(3):
+for i in range(50):
     current_holding = 0
     data = fresh_frame.copy()
     cash = starting_cash
@@ -82,7 +82,7 @@ for i in range(3):
         print(f'reward {reward}')
         """
 
-        reward = (curr_portfolio / prev_portfolio) / 1
+        reward = (((curr_portfolio / prev_portfolio) / 1 ) + ((curr_portfolio / starting_cash) - 1))/2
         if prev_action == 2:
             reward = 0
         
@@ -135,7 +135,7 @@ for i in range(3):
 
         prev_action = action
         prev_portfolio = curr_portfolio
-        print(f'Day {j}: Action {action}')
+        #print(f'Day {j}: Action {action}')
 
     # Get results of training trip
     cum_frame, total_cum, adr, std = ind.assess_strategy(train_start, train_end, data, symbol, starting_cash)
@@ -158,7 +158,7 @@ for j in range(len(test_inds)):
 
     state = np.array(state)
     action = dqn.test(state)
-    print(action)
+    #print(action)
 
     if action == 0:  # Buy
         if current_holding < shares:
