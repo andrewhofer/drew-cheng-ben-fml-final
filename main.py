@@ -40,7 +40,7 @@ days = 10
 flat_holding_penalty = 10
 
 # Training trips
-for i in range(3):
+for i in range(5):
     current_holding = 0
     data = fresh_frame.copy()
     cash = starting_cash
@@ -135,6 +135,7 @@ for i in range(3):
 test_prices = ind.get_data(train_start, train_end, [symbol], include_spy=False)
 test_prices['Trades'], test_prices['Holding'] = 0, 0
 data = test_prices.copy()
+current_holding = 0
 
 test_inds = indicators.loc[train_start:train_end]
 
@@ -211,6 +212,7 @@ test_prices['Trades'], test_prices['Holding'] = 0, 0
 data = test_prices.copy()
 
 test_inds = indicators.loc[test_start:test_end]
+current_holding = 0
 
 # Loop over the data
 for j in range(len(test_inds)):
