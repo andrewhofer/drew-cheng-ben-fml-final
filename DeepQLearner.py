@@ -36,54 +36,61 @@ class DeepQLearner:
                       loss='mse')
         return model
 
+    # def sample_from_buffer(self):
+    #     if len(self.experience_buffer) < self.batch_size:
+    #         return random.choices(self.experience_buffer, k=self.batch_size)
+    #     else:
+    #         return random.sample(self.experience_buffer, self.batch_size)
+
     def sample_from_buffer(self):
-        if len(self.experience_buffer) < self.batch_size:
-            return random.choices(self.experience_buffer, k=self.batch_size)
+        num_samples = min(self.batch_size, len(self.experience_buffer))
+        if num_samples > 0:
+            return random.choices(self.experience_buffer, k=num_samples)
         else:
-            return random.sample(self.experience_buffer, self.batch_size)
+            return []
 
     def save_model(self):
         self.model.save('test_model')
 
 
-    def train(self, s, r):
-        # Receive new state s and new reward r.  Update Q-table and return selected action.
-        # Consider: The Q-update requires a complete <s, a, s', r> tuple.
-        #           How will you know the previous state and action?
-        current_state = np.array([s])
-        q_vals = self.model.predict(current_state, verbose=0)
-        print("Q-values in train:", q_vals)
-        a = self.choose_action(s)
-
-        self.experience_buffer.append((self.prev_s, self.prev_a, current_state, r))
-
-        if len(self.experience_buffer) > self.buffer_size:
-            self.experience_buffer = self.experience_buffer[-self.buffer_size:]
-
-        batch = self.sample_from_buffer()
-        prev_states = [experience[0] for experience in batch]
-        prev_actions = [experience[1] for experience in batch]
-        next_states = [experience[2] for experience in batch]
-        rewards = [experience[3] for experience in batch]
-
-        prev_states = np.array(prev_states)
-        prev_actions = np.array(prev_actions)
-        next_states = np.array(next_states)
-        rewards = np.array(rewards)
-
-        prev_q_values = self.model.predict(prev_states, verbose=0)
-        next_q_values = self.model.predict(next_states, verbose=0)
-        max_next_q_values = np.max(next_q_values, axis=1)
-        targets = rewards + self.gamma * np.amax(max_next_q_values, axis=1)
-        prev_q_values[np.arange(self.batch_size), prev_actions] = targets
-
-        self.model.fit(prev_states, prev_q_values, verbose=0)
-
-        self.prev_s = s
-        self.prev_a = a
-        self.epsilon *= self.epsilon_decay
-        #print("epsilon: " + str(self.epsilon))
-        return a
+    # def train(self, s, r):
+    #     # Receive new state s and new reward r.  Update Q-table and return selected action.
+    #     # Consider: The Q-update requires a complete <s, a, s', r> tuple.
+    #     #           How will you know the previous state and action?
+    #     current_state = np.array([s])
+    #     q_vals = self.model.predict(current_state, verbose=0)
+    #     print("Q-values in train:", q_vals)
+    #     a = self.choose_action(s)
+    #
+    #     self.experience_buffer.append((self.prev_s, self.prev_a, current_state, r))
+    #
+    #     if len(self.experience_buffer) > self.buffer_size:
+    #         self.experience_buffer = self.experience_buffer[-self.buffer_size:]
+    #
+    #     batch = self.sample_from_buffer()
+    #     prev_states = [experience[0] for experience in batch]
+    #     prev_actions = [experience[1] for experience in batch]
+    #     next_states = [experience[2] for experience in batch]
+    #     rewards = [experience[3] for experience in batch]
+    #
+    #     prev_states = np.array(prev_states)
+    #     prev_actions = np.array(prev_actions)
+    #     next_states = np.array(next_states)
+    #     rewards = np.array(rewards)
+    #
+    #     prev_q_values = self.model.predict(prev_states, verbose=0)
+    #     next_q_values = self.model.predict(next_states, verbose=0)
+    #     max_next_q_values = np.max(next_q_values, axis=1)
+    #     targets = rewards + self.gamma * np.amax(max_next_q_values, axis=1)
+    #     prev_q_values[np.arange(self.batch_size), prev_actions] = targets
+    #
+    #     self.model.fit(prev_states, prev_q_values, verbose=0)
+    #
+    #     self.prev_s = s
+    #     self.prev_a = a
+    #     self.epsilon *= self.epsilon_decay
+    #     #print("epsilon: " + str(self.epsilon))
+    #     return a
 
     def test(self, s):
         # Receive new state s.  Do NOT update Q-table, but still return selected action.
@@ -110,3 +117,56 @@ class DeepQLearner:
             result = np.argmax(q_vals)
             #print("Returning", result)
             return result
+
+    def train(self, s, r):
+        # Current state
+        current_state = np.array([s])
+
+        # Choose the action based on the current state
+        a = self.choose_action(s)
+
+        # Sample a batch from the buffer
+        batch = self.sample_from_buffer()
+        if len(batch) == 0:
+            return a
+
+        # Extract data from the batch
+        prev_states = [experience[0] for experience in batch]
+        prev_actions = [experience[1] for experience in batch]
+        next_states = [experience[2] for experience in batch]
+        rewards = [experience[3] for experience in batch]
+
+        prev_states = np.array(prev_states)
+        prev_actions = np.array(prev_actions)
+        next_states = np.array(next_states)
+        rewards = np.array(rewards)
+
+        # Predict Q values for previous and next states
+        prev_q_values = self.model.predict(prev_states, verbose=0)
+        next_q_values = self.model.predict(next_states, verbose=0)
+
+        # Calculate the targets
+        max_next_q_values = np.max(next_q_values, axis=1)
+        targets = rewards + self.gamma * max_next_q_values
+
+        # Update the Q values
+        prev_q_values[np.arange(self.batch_size), prev_actions] = targets
+
+        # Train the model
+        self.model.fit(prev_states, prev_q_values, verbose=0)
+
+        # Append the new experience to the buffer
+        self.experience_buffer.append((self.prev_s, self.prev_a, s, r))
+
+        # If the buffer is too big, remove the oldest experience
+        if len(self.experience_buffer) > self.buffer_size:
+            self.experience_buffer = self.experience_buffer[-self.buffer_size:]
+
+        # Update the previous state and action
+        self.prev_s = s
+        self.prev_a = a
+
+        # Decay the epsilon
+        self.epsilon *= self.epsilon_decay
+
+        return a

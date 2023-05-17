@@ -18,7 +18,7 @@ indicators = pd.read_csv('XLK_Inds.csv')
 indicators.set_index('Date', inplace=True)
 
 symbol = 'XLK'
-shares = 1000
+shares = 1300
 starting_cash = 200000
 
 # Define state and action dimensions
@@ -26,8 +26,8 @@ state_dim = 9
 action_dim = 3
 
 # Initialize the DQN model and load indicators
-dqn = Q.DeepQLearner(state_dim=state_dim, action_dim=action_dim,alpha = 0.9, gamma = 0.9, epsilon = 0.998,
-                  epsilon_decay = 0.999, hidden_layers = 2, buffer_size = 150, batch_size = 64)
+dqn = Q.DeepQLearner(state_dim=state_dim, action_dim=action_dim,alpha = 0.8, gamma = 0.8, epsilon = 0.998,
+                  epsilon_decay = 0.999, hidden_layers = 4, buffer_size = 150, batch_size = 64)
 
 prices = ind.get_data(train_start, train_end, [symbol], include_spy=False)
 prices['Trades'], prices['Holding'] = 0, 0
@@ -40,7 +40,7 @@ days = 1
 flat_holding_penalty = 1
 
 # Training trips
-for i in range(30):
+for i in range(3):
     current_holding = 0
     data = fresh_frame.copy()
     cash = starting_cash
