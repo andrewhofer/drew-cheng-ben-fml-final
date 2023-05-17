@@ -40,7 +40,7 @@ days = 10
 flat_holding_penalty = 10
 
 # Training trips
-for i in range(5):
+for i in range(1):
     current_holding = 0
     data = fresh_frame.copy()
     cash = starting_cash
@@ -152,8 +152,6 @@ for j in range(len(test_inds)):
     if action == 0:  # Buy
         if current_holding < shares:
             trade = shares
-            trade_val = price * trade
-            cash -= trade_val
             current_holding += shares
             data.iloc[j, 1] = trade
             data.iloc[j, 2] = current_holding
@@ -163,8 +161,6 @@ for j in range(len(test_inds)):
     elif action == 1:  # Sell
         if current_holding > -shares:
             trade = -shares
-            trade_val = price * abs(trade)
-            cash += trade_val
             current_holding -= shares
             data.iloc[j, 1] = trade
             data.iloc[j, 2] = current_holding
@@ -174,15 +170,11 @@ for j in range(len(test_inds)):
     else:  # Flat
         if current_holding == shares: # Sell
             trade = shares
-            trade_val = price * trade
-            cash += trade_val
             current_holding = 0
             data.iloc[j, 1] = -shares
             data.iloc[j, 2] = current_holding
         elif current_holding == -shares: # Buy
             trade = shares
-            trade_val = price * trade
-            cash -= trade_val
             current_holding = 0
             data.iloc[j, 1] = shares
             data.iloc[j, 2] = current_holding
@@ -190,14 +182,15 @@ for j in range(len(test_inds)):
             data.iloc[j, 1] = 0
             data.iloc[j, 2] = current_holding
 
-print(data)
-
 # Get results of training trip
 cum_frame, total_cum, adr, std = ind.assess_strategy(train_start, train_end, data, symbol, starting_cash)
 
 prices = ind.get_data(train_start, train_end, [symbol], include_spy=False)
-prices = (prices / prices[symbol].iloc[0]) - 1  # Benchmark
-pp.plot(prices, color='r', label='Buy and Hold Benchmark')  # Benchmark
+prices['Trades'], prices['Holding'] = 0, shares
+prices['Trades'].iloc[0] = shares
+bench_frame, bench_cum, bench_adr, bench_std = ind.assess_strategy(train_start, train_end, prices, symbol, starting_cash)
+
+pp.plot(bench_frame, color='r', label='Buy and Hold Benchmark')  # Benchmark
 pp.plot(cum_frame, color='b', label='In Sample Q–Learned Strategy')
 pp.legend()
 pp.title("Benchmark vs In Sample Q–Learned Strategy")
@@ -265,12 +258,14 @@ for j in range(len(test_inds)):
             data.iloc[j, 1] = 0
             data.iloc[j, 2] = current_holding
 
-print(data)
 cum_frame, total_cum, adr, std = ind.assess_strategy(test_start, test_end, data, symbol, starting_cash)
 
 prices = ind.get_data(test_start, test_end, [symbol], include_spy=False)
-prices = (prices / prices[symbol].iloc[0]) - 1  # Benchmark
-pp.plot(prices, color='r', label='Buy and Hold Benchmark')  # Benchmark
+prices['Trades'], prices['Holding'] = 0, shares
+prices['Trades'].iloc[0] = shares
+bench_frame, bench_cum, bench_adr, bench_std = ind.assess_strategy(test_start, test_end, prices, symbol, starting_cash)
+
+pp.plot(bench_frame, color='r', label='Buy and Hold Benchmark')  # Benchmark
 pp.plot(cum_frame, color='b', label='Out of Sample Q–Learned Strategy')
 pp.legend()
 pp.title("Benchmark vs Out of Sample Q–Learned Strategy")
