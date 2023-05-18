@@ -6,6 +6,7 @@ import scrape as scrap
 import DeepQLearner as Q
 import chatGPT as gpt
 
+## model without chatGPT as indicator
 
 num_train = 0
 total_cum_list = []  # track total_cum at each training iteration
@@ -22,7 +23,7 @@ while True:  # added loop
     test_start = '2020-04-01'
     test_end = '2020-12-31'
 
-    all_indicators = ['SMA_25', 'SMA_50', 'OBV', 'ADL', 'ADX', 'MACD', 'RSI', 'Sto_Osc', 'GPT Sent']
+    all_indicators = ['SMA_25', 'SMA_50', 'OBV', 'ADL', 'ADX', 'MACD', 'RSI', 'Sto_Osc']
 
     indicators = pd.read_csv('XLK_Inds.csv')
     indicators.set_index('Date', inplace=True)
@@ -32,7 +33,7 @@ while True:  # added loop
     starting_cash = 200000
 
     # Define state and action dimensions
-    state_dim = 9
+    state_dim = 8
     action_dim = 3
 
     # Initialize the DQN model and load indicators
@@ -212,7 +213,7 @@ while True:  # added loop
     pp.plot(bench_frame, color='r', label='Buy and Hold Benchmark')  # Benchmark
     pp.plot(cum_frame, color='b', label='In Sample Q–Learned Strategy')
     pp.legend()
-    pp.title("Benchmark vs In Sample Q–Learned Strategy w/GPT on run "+str(num_train))
+    pp.title("Benchmark vs In Sample Q–Learned Strategy no GPT on run "+str(num_train))
     pp.xlabel("Date")
     pp.ylabel("Cumulative Returns")
     pp.grid()
@@ -287,7 +288,7 @@ while True:  # added loop
                 data.iloc[j, 1] = 0
                 data.iloc[j, 2] = current_holding
 
-    cum_frame, total_cum, adr, std = ind.assess_strategy(test_start, test_end, data, symbol, starting_cash)
+    cum_frame, total_cum_out, adr, std = ind.assess_strategy(test_start, test_end, data, symbol, starting_cash)
 
     prices = ind.get_data(test_start, test_end, [symbol], include_spy=False)
     prices['Trades'], prices['Holding'] = 0, shares
@@ -296,20 +297,18 @@ while True:  # added loop
                                                                        starting_cash)
 
     print("***OUT OF SAMPLE TEST RESULTS***")
-    print(total_cum, adr, std)
+    print(total_cum_out, adr, std)
     print(bench_cum, bench_adr, bench_std)
     print("***OUT OF SAMPLE TEST RESULTS***")
 
     pp.plot(bench_frame, color='r', label='Buy and Hold Benchmark')  # Benchmark
     pp.plot(cum_frame, color='b', label='Out of Sample Q–Learned Strategy')
     pp.legend()
-    pp.title("Benchmark vs Out of Sample Q–Learned Strategy w/GPT on run "+str(num_train))
+    pp.title("Benchmark vs Out of Sample Q–Learned Strategy no GPT on run "+str(num_train))
     pp.xlabel("Date")
     pp.ylabel("Cumulative Returns")
     pp.grid()
     pp.show()
-
-    cum_frame, total_cum_out, adr, std = ind.assess_strategy(test_start, test_end, data, symbol, starting_cash)
 
     # Get the variance of the holdings
     out_sample_holding_var = data['Holding'].var()
@@ -323,7 +322,7 @@ while True:  # added loop
 
     train_data = pd.concat([train_data, new_row]).reset_index(drop=True)
 
-    if num_train == 20:
+    if num_train == 50:
         break
 
 
@@ -337,5 +336,5 @@ if total_cum_oos_when_is_beat_bench:  # check if the list is not empty
 
 print(train_data)
 
-train_data.to_csv('train_data.csv', index=False)
+train_data.to_csv('train_data_no.csv', index=False)
 
