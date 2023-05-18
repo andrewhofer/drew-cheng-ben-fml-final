@@ -146,7 +146,7 @@ class DeepQLearner:
         next_q_values = self.model.predict(next_states, verbose=0)
 
         # Calculate the targets
-        max_next_q_values = np.max(next_q_values, axis=1)
+        max_next_q_values = np.max(next_q_values, axis=2)
         targets = rewards + self.gamma * max_next_q_values
 
         # Update the Q values
